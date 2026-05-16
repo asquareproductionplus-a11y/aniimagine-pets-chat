@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animagine Studios</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+    font-family:'Baloo 2', cursive;
+    background:linear-gradient(to bottom,#fcefdc,#f7d9b9);
+    margin:0;
+    color:#4b2d1a;
+}
+
+/* HEADER */
+header{
+    background:linear-gradient(to right,#8b5e3c,#b07d55);
+    color:white;
+    text-align:center;
+    padding:25px;
+    font-size:40px;
+    font-weight:bold;
+}
+
+/* MAIN */
+.container{
+    width:90%;
+    max-width:1100px;
+    margin:30px auto;
+}
+
+/* PET SECTION */
+.box{
+    background:#fff6eb;
+    padding:20px;
+    border-radius:25px;
+    border:5px solid #d7a97b;
+    margin-bottom:25px;
+}
+
+input, textarea{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border-radius:15px;
+    border:none;
+    font-size:16px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    background:#ffb347;
+    border:none;
+    border-radius:20px;
+    font-size:18px;
+    cursor:pointer;
+}
+
+/* CARDS */
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
+}
+
+.card{
+    background:white;
+    border-radius:25px;
+    overflow:hidden;
+    border:4px solid #d7a97b;
+}
+
+.card img{
+    width:100%;
+    height:220px;
+    object-fit:cover;
+}
+
+.card-content{
+    padding:15px;
+}
+
+/* CHATBOT */
+.chatbot{
+    background:#fff6eb;
+    border:5px solid #d7a97b;
+    border-radius:25px;
+    padding:15px;
+    margin-top:30px;
+}
+
+.chat-box{
+    height:250px;
+    overflow-y:auto;
+    background:white;
+    padding:10px;
+    border-radius:15px;
+    border:2px solid #d7a97b;
+}
+
+.msg{
+    margin:5px 0;
+}
+
+.user{
+    text-align:right;
+    color:#8b5e3c;
+}
+
+.bot{
+    text-align:left;
+    color:#4b2d1a;
+}
+
+.chat-input{
+    display:flex;
+    margin-top:10px;
+}
+
+.chat-input input{
+    flex:1;
+    margin-right:10px;
+}
+
+.small-btn{
+    width:120px;
+}
+</style>
+</head>
+
+<body>
+
+<header>🐾 Animagine Studios 🐾</header>
+
+<div class="container">
+
+<!-- PET SECTION -->
+<div class="box">
+<h2>Add Animal</h2>
+<input type="text" id="name" placeholder="Animal name">
+<textarea id="info" placeholder="Write about animal..."></textarea>
+<input type="file" id="img">
+<button onclick="addAnimal()">Add Pet 🐶</button>
+</div>
+
+<div class="cards" id="cards"></div>
+
+<!-- CHATBOT -->
+<div class="chatbot">
+<h2>🐾 Animal Chatbot</h2>
+
+<div class="chat-box" id="chatBox"></div>
+
+<div class="chat-input">
+<input type="text" id="chatInput" placeholder="Talk to me...">
+<button class="small-btn" onclick="sendMsg()">Send</button>
+</div>
+</div>
+
+</div>
+
+<script>
+
+/* -------- PET SYSTEM -------- */
+
+function addAnimal(){
+
+    const name = document.getElementById("name").value;
+    const info = document.getElementById("info").value;
+    const img = document.getElementById("img");
+
+    if(!name || !info || img.files.length === 0){
+        alert("Fill all fields!");
+        return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = function(e){
+        const card = document.createElement("div");
+        card.className = "card";
+
+        card.innerHTML = `
+            <img src="${e.target.result}">
+            <div class="card-content">
+                <h3>${name}</h3>
+                <p>${info}</p>
+            </div>
+        `;
+
+        document.getElementById("cards").appendChild(card);
+    };
+
+    reader.readAsDataURL(img.files[0]);
+
+}
+
+/* -------- CHATBOT SYSTEM -------- */
+
+let chatMemory = []; // stores messages (max 100)
+
+function addMessage(text, type){
+
+    if(chatMemory.length >= 100){
+        chatMemory.shift(); // remove oldest message
+    }
+
+    chatMemory.push({text, type});
+
+    const box = document.getElementById("chatBox");
+
+    const div = document.createElement("div");
+    div.className = "msg " + type;
+    div.innerText = text;
+
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+}
+
+function botReply(msg){
+
+    msg = msg.toLowerCase();
+
+    if(msg.includes("hello") || msg.includes("hi")){
+        return "Hello 🐶! I'm Animagine Bot. Tell me about your pet!";
+    }
+    else if(msg.includes("dog")){
+        return "Dogs are loyal and cute 🐕❤️";
+    }
+    else if(msg.includes("cat")){
+        return "Cats are smart and independent 🐱✨";
+    }
+    else if(msg.includes("animal")){
+        return "I love all animals 🐾 Tell me about yours!";
+    }
+    else{
+        return "That's interesting! 🐾 Tell me more about your pet.";
+    }
+}
+
+function sendMsg(){
+
+    const input = document.getElementById("chatInput");
+    const text = input.value;
+
+    if(!text) return;
+
+    addMessage(text, "user");
+
+    const reply = botReply(text);
+
+    setTimeout(()=>{
+        addMessage(reply, "bot");
+    },500);
+
+    input.value = "";
+}
+
+</script>
+
+</body>
+</html>
